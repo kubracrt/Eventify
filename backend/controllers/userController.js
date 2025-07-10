@@ -34,15 +34,15 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
+  const { email, password } = req.body;
+  if (!email || !password) {
     return res.status(400).json({ message: "Lütfen tüm alanları doldurun." });
   }
 
   try {
     const user = await postgresClient.query(
-      "SELECT * FROM users WHERE username = $1",
-      [username]
+      "SELECT * FROM users WHERE email = $1",
+      [email]
     );
 
     if (user.rows.length === 0) {
@@ -63,6 +63,7 @@ export const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Giriş başarılı",
       token,
+      userId: user.rows[0].id,
     });
   } catch (err) {
     console.error(err);

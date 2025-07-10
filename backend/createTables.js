@@ -24,7 +24,7 @@ const createEventTables = async () => {
                 id SERIAL PRIMARY KEY,
                 title VARCHAR(100) NOT NULL,
                 description TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 location VARCHAR(100) NOT NULL,
                 user_id INTEGER REFERENCES users(id)
             )
