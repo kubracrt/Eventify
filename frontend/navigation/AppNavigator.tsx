@@ -7,6 +7,7 @@ import HomeScreen from '../screens/HomeScreen';
 import EventDetailScreen from '../screens/EventDetailScreen';
 import CreateEventScreen from '../screens/CreateEventScreen';
 import UserScreen from '../screens/UserScreen';
+import EditEventScreen from '../screens/EditEventScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -92,7 +93,7 @@ export default function AppNavigator() {
                     headerStyle: {
                         backgroundColor: '#5C6BC0',
                     },
-                    headerTintColor: '#fff', 
+                    headerTintColor: '#fff',
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     },
@@ -103,11 +104,23 @@ export default function AppNavigator() {
                     headerStyle: {
                         backgroundColor: '#5C6BC0',
                     },
-                    headerTintColor: '#fff', 
+                    headerTintColor: '#fff',
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     }
                 }} />
+            <Stack.Screen name="EditEventScreen" component={EditEventScreen}
+                options={{
+                    title: 'Etkinlik Güncelleme',
+                    headerStyle: {
+                        backgroundColor: '#5C6BC0',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    }
+                }} />
+
         </Stack.Navigator >
     );
 }

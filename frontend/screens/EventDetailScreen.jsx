@@ -18,7 +18,7 @@ export default function EventDetailScreen({ route }) {
  const {data:event,isLoading,isError} = useQuery({
    queryKey: ['event', id],
    queryFn: async () => {
-     const response = await axios.get(`http://192.168.1.20:5000/events/${id}`);
+     const response = await axios.get(`http://192.168.1.37:5000/events/${id}`);
      return response.data.data;
    }
  })

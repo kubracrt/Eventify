@@ -4,8 +4,9 @@ import { useNavigation } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { AuthContext } from '@/context/AuthContext';
+import { Button } from '@react-navigation/elements';
 
 export default function UserScreen() {
     const navigation = useNavigation();
@@ -13,20 +14,66 @@ export default function UserScreen() {
     const fetchEvents = async () => {
         const userId = await AsyncStorage.getItem('userId');
         const token = await AsyncStorage.getItem('token');
-        const response = await axios.get(`http://192.168.1.20:5000/events/user/${userId}`, {
+        const response = await axios.get(`http://192.168.1.37:5000/events/user/${userId}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        console.log("Gelen Etkinlikler:", response.data.data);
         return response.data.data;
-
-    }
+    };
 
     const { data: events, isLoading, isError } = useQuery({
         queryKey: ['events'],
         queryFn: fetchEvents,
     });
+
+    const { logout } = useContext(AuthContext);
+
+    const handleLogout = async () => {
+        try {
+            logout();
+            navigation.navigate('Login');
+            Alert.alert("Çıkış Başarılı", "Başarıyla çıkış yaptınız.");
+        } catch (error) {
+            Alert.alert("Hata", "Çıkış yaparken bir sorun oluştu.");
+        }
+    };
+
+    const { mutate: deleteEvent, isPending: isDeleting } = useMutation({
+        mutationFn: async (eventId) => {
+            const token = await AsyncStorage.getItem('token');
+            const res = await axios.delete(`http://192.168.1.37:5000/events/${eventId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            return res.data;
+        },
+        onSuccess: () => {
+            Alert.alert("Başarılı", "Etkinlik silindi.");
+        },
+        onError: () => {
+            Alert.alert("Hata", "Etkinlik silinemedi.");
+        }
+    });
+
+    const Item = ({ item }) => (
+        <View style={styles.card}>
+            <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <TouchableOpacity onPress={() => deleteEvent(item.id)}>
+                    <MaterialIcons name="delete" size={22} color="#D32F2F" />
+                </TouchableOpacity>
+            </View>
+            <Text style={styles.cardText}>{new Date(item.date).toLocaleDateString()}</Text>
+            <Text style={styles.cardText}>{item.location}</Text>
+            <Text style={styles.cardText}>{item.description}</Text>
+            <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => navigation.navigate('EditEventScreen', { id: item.id })}
+            >
+                <Text style={styles.editButtonText}>Düzenle</Text>
+            </TouchableOpacity>
+        </View >
+    );
 
     if (isLoading) {
         return (
@@ -45,32 +92,6 @@ export default function UserScreen() {
         );
     }
 
-    const { logout } = useContext(AuthContext);
-
-
-    const handleLogout = async () => {
-        try {
-            logout();
-            navigation.navigate('Login');
-            Alert.alert("Çıkış Başarılı", "Başarıyla çıkış yaptınız.");
-        } catch (error) {
-            console.error("Çıkış yaparken hata oluştu:", error);
-            Alert.alert("Hata", "Çıkış yaparken bir sorun oluştu.");
-        }
-    };
-
-    const Item = ({ item }) => (
-        <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate('EventDetail', { id: item.id })}
-        >
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardText}>📅 {new Date(item.date).toLocaleDateString()}</Text>
-            <Text style={styles.cardText}>📍 {item.location}</Text>
-            <Text style={styles.cardText}>📝 {item.description}</Text>
-        </TouchableOpacity>
-    );
-
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -82,7 +103,8 @@ export default function UserScreen() {
             </View>
             <View style={styles.sectionHeader}>
                 <Text style={styles.title}>Etkinliklerim</Text>
-            </View>            <FlatList
+            </View>
+            <FlatList
                 data={events}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={Item}
@@ -99,31 +121,29 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         backgroundColor: '#5C6BC0',
         paddingHorizontal: 20,
-        paddingVertical: 15,
-        height: "12%"
+        paddingTop: 40,
+        paddingBottom: 16,
     },
     headerText: {
-        marginTop: 50,
         color: '#fff',
         fontSize: 22,
         fontWeight: 'bold',
     },
     title: {
         color: '#5C6BC0',
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
     },
     logoutButton: {
-        marginTop: 50,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#ecab53',
         borderRadius: 8,
         paddingHorizontal: 14,
-        paddingVertical: 4,
+        paddingVertical: 6,
     },
     logoutButtonText: {
         color: 'white',
@@ -137,29 +157,50 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: '#ddd',
-        f: 18,
-
     },
     card: {
         backgroundColor: '#fff',
-        padding: 15,
-        borderRadius: 15,
+        padding: 14,
+        borderRadius: 12,
         marginBottom: 16,
         elevation: 3,
         shadowColor: '#000',
         shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowRadius: 5,
         shadowOffset: { width: 0, height: 2 },
     },
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
     cardTitle: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: 'bold',
-        marginBottom: 5,
         color: '#333',
     },
     cardText: {
         fontSize: 14,
-        marginBottom: 3,
         color: '#555',
+        marginBottom: 4,
+    },
+    editButton: {
+        marginTop: 10,
+        alignSelf: 'flex-start',
+        backgroundColor: '#5C6BC0',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+    },
+    editButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

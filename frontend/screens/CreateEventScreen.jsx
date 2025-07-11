@@ -38,7 +38,7 @@ export default function CreateEventScreen() {
   const { mutate, isPending } = useMutation({
     mutationFn: async (formData) => {
       const token = await AsyncStorage.getItem('token');
-      const res = await axios.post(`http://192.168.1.20:5000/events`, formData, {
+      const res = await axios.post(`http://192.168.1.37:5000/events`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data;

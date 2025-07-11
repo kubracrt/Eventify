@@ -16,7 +16,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const fetchEvents = async () => {
   const token = await AsyncStorage.getItem('token');
-  const res = await axios.get('http://192.168.1.20:5000/events?page=1&limit=10', {
+  const res = await axios.get('http://192.168.1.37:5000/events?page=1&limit=10', {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data.data;
@@ -36,9 +36,9 @@ export default function HomeScreen() {
       onPress={() => navigation.navigate('EventDetail', { id: item.id })}
     >
       <Text style={styles.cardTitle}>{item.title}</Text>
-      <Text style={styles.cardText}>📅 {new Date(item.date).toLocaleDateString()}</Text>
-      <Text style={styles.cardText}>📍 {item.location}</Text>
-      <Text style={styles.cardText}>📝 {item.description}</Text>
+      <Text style={styles.cardText}>{new Date(item.date).toLocaleDateString()}</Text>
+      <Text style={styles.cardText}>{item.location}</Text>
+      <Text style={styles.cardText}>{item.description}</Text>
     </TouchableOpacity>
   );
 
