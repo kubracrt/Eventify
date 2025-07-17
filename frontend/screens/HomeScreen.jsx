@@ -20,7 +20,7 @@ const fetchEvents = async ({ queryKey }) => {
   const res = await axios.get(`http://192.168.1.20:5000/events?page=${page}&limit=10`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return res.data; // backend bu formatta: { data: [...], totalPages: X }
+  return res.data; 
 };
 
 export default function HomeScreen() {
