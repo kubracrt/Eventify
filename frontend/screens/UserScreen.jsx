@@ -14,7 +14,7 @@ export default function UserScreen() {
     const fetchEvents = async () => {
         const userId = await AsyncStorage.getItem('userId');
         const token = await AsyncStorage.getItem('token');
-        const response = await axios.get(`http://192.168.1.37:5000/events/user/${userId}`, {
+        const response = await axios.get(`http://192.168.1.20:5000/events/user/${userId}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -42,7 +42,7 @@ export default function UserScreen() {
     const { mutate: deleteEvent, isPending: isDeleting } = useMutation({
         mutationFn: async (eventId) => {
             const token = await AsyncStorage.getItem('token');
-            const res = await axios.delete(`http://192.168.1.37:5000/events/${eventId}`, {
+            const res = await axios.delete(`http://192.168.1.20:5000/events/${eventId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             return res.data;

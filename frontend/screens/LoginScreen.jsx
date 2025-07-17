@@ -28,7 +28,7 @@ export default function LoginScreen() {
 
   const onSubmitLogin = async (data) => {
     try {
-      const response = await axios.post('http://192.168.1.37:5000/login',data);
+      const response = await axios.post('http://192.168.1.20:5000/login',data);
       login(response.data.token,response.data.userId);
       Alert.alert("Başarılı", "Giriş yapıldı.");
       navigation.navigate('Home');
@@ -39,7 +39,7 @@ export default function LoginScreen() {
 
   const onSubmitRegister = async (data) => {
     try {
-      await axios.post('http://192.168.1.37:5000/register', data);
+      await axios.post('http://192.168.1.20:5000/register', data);
       Alert.alert("Başarılı", "Kayıt tamamlandı.");
       setRegistered(false);
       reset();

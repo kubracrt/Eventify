@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -14,21 +14,32 @@ import axios from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-const fetchEvents = async () => {
+const fetchEvents = async ({ queryKey }) => {
+  const [_key, page] = queryKey;
   const token = await AsyncStorage.getItem('token');
-  const res = await axios.get('http://192.168.1.37:5000/events?page=1&limit=10', {
+  const res = await axios.get(`http://192.168.1.20:5000/events?page=${page}&limit=10`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return res.data.data;
+  return res.data; // backend bu formatta: { data: [...], totalPages: X }
 };
 
 export default function HomeScreen() {
   const navigation = useNavigation();
+  const [page, setPage] = useState(1);
 
-  const { data: events, isLoading, isError } = useQuery({
-    queryKey: ['events'],
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+  } = useQuery({
+    queryKey: ['events', page],
     queryFn: fetchEvents,
+    keepPreviousData: true,
   });
+
+  const events = data?.data || [];
+  const totalPages = data?.totalPages || 1;
 
   const Item = ({ item }) => (
     <TouchableOpacity
@@ -42,12 +53,34 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
+  const renderPagination = () => (
+    <View style={styles.paginationWrapper}>
+      <TouchableOpacity
+        onPress={() => setPage((prev) => Math.max(prev - 1, 1))}
+        disabled={page === 1}
+        style={[styles.navButton, page === 1 && styles.disabledButton]}
+      >
+        <Text style={styles.navText}>←</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.pageIndicator}>{page} / {totalPages}</Text>
+
+      <TouchableOpacity
+        onPress={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+        disabled={page === totalPages}
+        style={[styles.navButton, page === totalPages && styles.disabledButton]}
+      >
+        <Text style={styles.navText}>→</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <MaterialIcons name="event" size={24} color="white" style={styles.icon}
-          />
+          <MaterialIcons name="event" size={24} color="white" style={styles.icon} />
           <Text style={styles.headerText}>Etkinlikler</Text>
         </View>
         <AntDesign
@@ -64,14 +97,17 @@ export default function HomeScreen() {
       ) : isError ? (
         <Text style={{ textAlign: 'center', color: 'red' }}>Etkinlikler yüklenemedi.</Text>
       ) : (
-        <FlatList
-          data={events}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={Item}
-          contentContainerStyle={{ padding: 16 }}
-        />
-      )}
+        <>
+          <FlatList
+            data={events}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={Item}
+            contentContainerStyle={{ padding: 16 }}
+          />
 
+          {renderPagination()}
+        </>
+      )}
     </View>
   );
 }
@@ -87,8 +123,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     height: "12%"
   },
-  icon:{
-    marginTop:50
+  icon: {
+    marginTop: 50
   },
   headerText: {
     marginTop: 50,
@@ -118,17 +154,55 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     color: '#555',
   },
-  profileButton: {
-    backgroundColor: '#FF7F50',
-    paddingVertical: 12,
-    marginHorizontal: 30,
-    marginBottom: 20,
-    borderRadius: 30,
-    alignItems: 'center',
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 10,
+    gap: 10,
   },
-  profileButtonText: {
+  pageButton: {
+    backgroundColor: '#ccc',
+    padding: 10,
+    borderRadius: 8,
+  },
+  activePage: {
+    marginBottom: 80,
+    backgroundColor: '#5C6BC0',
+  },
+  pageText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
   },
+  paginationWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20,
+    marginBottom: 80,
+  },
+
+  navButton: {
+    backgroundColor: '#5C6BC0',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+  },
+
+  disabledButton: {
+    backgroundColor: '#5C6BC0',
+  },
+
+  navText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    paddingBottom:6
+  },
+
+  pageIndicator: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+
 });

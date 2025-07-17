@@ -28,7 +28,7 @@ export default function EditEventScreen() {
     useEffect(() => {
         const fetchEvent = async () => {
             const token = await AsyncStorage.getItem('token');
-            const res = await axios.get(`http://192.168.1.37:5000/events/${id}`, {
+            const res = await axios.get(`http://192.168.1.20:5000/events/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setEventData(res.data.data);
@@ -39,7 +39,7 @@ export default function EditEventScreen() {
     const { mutate, isPending } = useMutation({
         mutationFn: async (updatedData) => {
             const token = await AsyncStorage.getItem('token');
-            const res = await axios.put(`http://192.168.1.37:5000/events/${id}`, updatedData, {
+            const res = await axios.put(`http://192.168.1.20:5000/events/${id}`, updatedData, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             return res.data;
